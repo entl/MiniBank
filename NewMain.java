@@ -1,3 +1,12 @@
+//written by Vorobyov Maksym
+//Saturday April 02 2022
+
+/*	The NewMain class implements an application that 
+ *  allow user to register a bank account and perform
+ * different operations such deposit, withdraw, transfer,
+ * check history, view balance and change account credits.
+ * All information is stored in multiple data files.
+ * */
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
