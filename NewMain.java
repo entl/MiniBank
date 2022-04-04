@@ -207,7 +207,7 @@ public class NewMain {
         thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) + amount);
         sc.nextLine();// blank line
         writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", "");
-        receipts(String.valueOf(amount), "Deposit", thisAccount[5]);
+        receipts(String.valueOf(amount), "Deposit ", thisAccount[5]);
         System.out.println("Press enter to continue... ");
         sc.nextLine();
     }
@@ -278,14 +278,39 @@ public class NewMain {
                 }
             }
         }
-        for (int i = 0; i < allReceipts.length; i++) {
-            System.out.println(Arrays.toString(allReceipts[i]));
+        System.out.print("""
+                \n
+                1. View all history
+                2. Search for transaction
+                3. Sort transations
+                """);
+        System.out.print("Choose option:");
+        switch (sc.nextLine()) {
+            case "1":
+                System.out.println("\tDate \t      Trans. No     Type \tAccount No\tAmount");
+                for (int i = 0; i < allReceipts.length; i++) {
+                    for (int j = 0; j < allReceipts[0].length; j++) {
+                        if (j!=4) {
+                            System.out.print(allReceipts[i][j]+"\t  ");    
+                        }
+                        else System.out.println("\t"+allReceipts[i][j]+"\t  ");
+                    }
+                    System.out.println("");
+                }
+                break;
+
+            default:
+                break;
         }
     }
         
 
     // ------------------------backend methods------------------------------------
 
+    public static void search() {
+        
+    }
+    
     public static void receipts(String amount, String transactionType, String toAccount)
             throws NumberFormatException, FileNotFoundException, IOException {
         String now = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()); // current date
