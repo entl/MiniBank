@@ -24,7 +24,7 @@ public class NewMain {
     static String[] thisAccount;
     static String[] allEmails;
     static String[] allAccountNumbers;
-    static String[][] allReceipts;
+    static String[][] allReceipts = new String[10][5];
     static Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) throws IOException {
@@ -69,7 +69,7 @@ public class NewMain {
             registrationData[2] = sc.nextLine(); //adds age
 
             if (Integer.parseInt(registrationData[2]) < 16) { //checks if person older 16
-                System.out.println("Registration a bank account is allowed only for people older 16");
+                System.out.println("Registration of the bank account is allowed only for people older 16");
                 break;
             }
 
@@ -118,6 +118,8 @@ public class NewMain {
             String[] encryptedRegistrationData = encryption(registrationData); //encryptes registration data
 
             writeFile(encryptedRegistrationData, encryptedRegistrationData[3]+".txt", ""); /* creates an encrypted file with registrated data file name is an encrypted email */
+            File receiptFile = new File(encryptedRegistrationData[3]+"_receipts.txt");
+            receiptFile.createNewFile();
             writeFile(encryption(allEmails), "emails.txt", encryptedRegistrationData[3]); /* adds new emails to the file with all emails */
             writeFile(encryption(allAccountNumbers), "accountNumbers.txt", encryptedRegistrationData[5]); /*  adds new account number to the file with all account numbers*/
             break;
@@ -178,6 +180,7 @@ public class NewMain {
                     transfer();
                     break;
                 case "6":
+                    history();
                     break;
                 case "7":
                     menu=false;
@@ -200,11 +203,11 @@ public class NewMain {
     public static void deposit() throws IOException {
         System.out.println("\n\n----------------------");
         System.out.print("Enter an amount to deposit: ");
-        int amount = sc.nextInt();
-        thisAccount[6] = String.valueOf(Integer.parseInt(thisAccount[6]) + amount);
+        double amount = sc.nextDouble();
+        thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) + amount);
         sc.nextLine();// blank line
         writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", "");
-        receipts(String.valueOf(amount), "Deposit", "");
+        receipts(String.valueOf(amount), "Deposit", thisAccount[5]);
         System.out.println("Press enter to continue... ");
         sc.nextLine();
     }
@@ -212,12 +215,12 @@ public class NewMain {
     public static void withdraw() throws IOException {
         System.out.println("\n\n----------------------");
         System.out.print("Enter an amount to withdraw: ");
-        int amount = sc.nextInt();
+        double amount = sc.nextDouble();
         sc.nextLine(); //blank line
-        if (Integer.parseInt(thisAccount[6]) - amount >= 0) {
-            thisAccount[6] = String.valueOf(Integer.parseInt(thisAccount[6]) - amount);
+        if (Double.parseDouble(thisAccount[6]) - amount >= 0) {
+            thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) - amount);
             writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", "");
-            receipts(String.valueOf(amount), "Withdraw", "");
+            receipts(String.valueOf(amount), "Withdraw", thisAccount[5]);
             System.out.println("Press enter to continue... ");
             sc.nextLine();
         } else
@@ -234,15 +237,15 @@ public class NewMain {
                 if (allAccountNumbers[i].compareTo(accountNumber)==0) {
                     flag = i;
                     System.out.print("Enter amount to transfer: ");
-                    int amount = sc.nextInt();
+                    double amount = sc.nextDouble();
                     sc.nextLine(); //blank line
 
                     String[] accountToTransfer = readFile((encryption(allEmails)[flag])+".txt"); /* reads data of account to transfer */
                     accountToTransfer = decryption(accountToTransfer); //decrypts
 
-                    if (Integer.parseInt(thisAccount[6]) - amount >= 0) { //check if it is enough funds
-                        thisAccount[6] = String.valueOf(Integer.parseInt(thisAccount[6]) - amount); // subtract from one acc
-                        accountToTransfer[6] = String.valueOf(Integer.parseInt(accountToTransfer[6]) + amount); //add to another
+                    if (Double.parseDouble(thisAccount[6]) - amount >= 0) { //check if it is enough funds
+                        thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) - amount); // subtract from one acc
+                        accountToTransfer[6] = String.valueOf(Double.parseDouble(accountToTransfer[6]) + amount); //add to another
                         receipts(String.valueOf(amount), "Transfer", accountToTransfer[5]);
                         writeFile(encryption(thisAccount), encryption(thisAccount)[3]+".txt", ""); //save and encrypt
                         writeFile(encryption(accountToTransfer), encryption(accountToTransfer)[3]+".txt", ""); //save and encrypt
@@ -261,8 +264,23 @@ public class NewMain {
         }
     }
 
-    public static void history() {
-        
+    public static void history() throws FileNotFoundException {
+        String[] allReceiptsTemp = decryption(readFile(encryption(thisAccount)[3]+"_receipts.txt")); 
+        System.out.println(Arrays.toString(allReceiptsTemp));
+        int j2 = 0;
+        for (int i = 0; i < allReceipts.length; i++) {
+            for (int j = 0; j < 5; j++) {
+                try {   
+                    allReceipts[i][j] = allReceiptsTemp[j2];
+                    j2++;
+                } catch (Exception e) {
+                    //TODO: handle exception
+                }
+            }
+        }
+        for (int i = 0; i < allReceipts.length; i++) {
+            System.out.println(Arrays.toString(allReceipts[i]));
+        }
     }
         
 
@@ -272,36 +290,27 @@ public class NewMain {
             throws NumberFormatException, FileNotFoundException, IOException {
         String now = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()); // current date
         String[] transactionNum = { String.valueOf(Integer.parseInt(readFile("transactionNumber.txt")[0]) + 1) }; /* array
-                                                                                                                   because
-                                                                                                                   read
-                                                                                                                   file
-                                                                                                                   requires
-                                                                                                                   arrays */
-        try { // try to find file with receipts
-            String[] allReceiptsTemp = decryption(
-                    readFile(Base64.getEncoder().encodeToString(thisAccount[3].getBytes()) + "_receipts.txt")); /* read
-                                                                                                                 data
-                                                                                                                 from
-                                                                                                                 file */
+        because
+        read
+        file
+        requires
+        arrays */
+        String[] allReceiptsTemp = decryption(
+            readFile(Base64.getEncoder().encodeToString(thisAccount[3].getBytes()) + "_receipts.txt")); /* read
+            data
+            from
+            file */
+            
+            String[] receipt = { now, transactionNum[0], transactionType, toAccount, amount}; /* if transfer we
+                                                                                                    need
+                                                                                                    accountNumber */
 
-            String[] receiptTemp;
-
-            if (transactionType.compareTo("Transfer") == 0) {
-                String[] receipt = { now, transactionNum[0], transactionType, toAccount, amount, "" }; /* if transfer we
-                                                                                                        need
-                                                                                                        accountNumber */
-                receiptTemp = receipt; // can be seen from outer scope
-            } else {
-                String[] receipt = { now, transactionNum[0], transactionType, amount, "" };
-                receiptTemp = receipt;
-            }
-
-            String[] updatedReceipts = new String[allReceiptsTemp.length + receiptTemp.length]; /* new array to
+            String[] updatedReceipts = new String[allReceiptsTemp.length + receipt.length]; /* new array to
                                                                                                 contanate old
                                                                                                  receipts and new one */
 
             System.arraycopy(allReceiptsTemp, 0, updatedReceipts, 0, allReceiptsTemp.length); // copy old receipts
-            System.arraycopy(receiptTemp, 0, updatedReceipts, allReceiptsTemp.length, receiptTemp.length); // copy new
+            System.arraycopy(receipt, 0, updatedReceipts, allReceiptsTemp.length, receipt.length); // copy new
 
             writeFile(encryption(updatedReceipts),
                     Base64.getEncoder().encodeToString(thisAccount[3].getBytes()) + "_receipts.txt", ""); /* update
@@ -310,24 +319,6 @@ public class NewMain {
             writeFile(transactionNum, "transactionNumber.txt", ""); // saves transaction number (all transactions have
                                                                     // different number)
 
-        } catch (Exception e) { /*
-                                 * if file wasn't found further code had same logic as in previous block the
-                                 * only difference is in catch block we don't read file with receipts
-                                 */
-            String[] receiptTemp;
-            if (transactionType.compareTo("Transfer") == 0) {
-                String[] receipt = { now, transactionNum[0], transactionType, toAccount, amount, "" };
-                receiptTemp = receipt;
-                System.out.println(Arrays.toString(receipt));
-            } else {
-                String[] receipt = { now, transactionNum[0], transactionType, amount, "" };
-                receiptTemp = receipt;
-                System.out.println(Arrays.toString(receipt));
-            }
-            writeFile(encryption(receiptTemp),
-                    Base64.getEncoder().encodeToString(thisAccount[3].getBytes()) + "_receipts.txt", "");
-            writeFile(transactionNum, "transactionNumber.txt", "");
-        }
     }
 
     // method is created to encrypt data arrays using base64 encryption
