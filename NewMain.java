@@ -287,18 +287,33 @@ public class NewMain {
         System.out.print("Choose option:");
         switch (sc.nextLine()) {
             case "1":
-                System.out.println("\tDate \t      Trans. No     Type \tAccount No\tAmount");
-                for (int i = 0; i < allReceipts.length; i++) {
-                    for (int j = 0; j < allReceipts[0].length; j++) {
-                        if (j!=4) {
-                            System.out.print(allReceipts[i][j]+"\t  ");    
-                        }
-                        else System.out.println("\t"+allReceipts[i][j]+"\t  ");
-                    }
-                    System.out.println("");
+                viewAll();
+                break;
+            case "2":
+                System.out.println(
+                        "1. Search by date \n2.Search by transaction type\n3.Search by account No. \n4.Search by transaction No.");
+                System.out.print("Choose searching criteria: ");
+                switch (sc.nextLine()) {
+                    case "1":
+                        System.out.print("Enter date (ex. 30/01/2000): ");
+                        search(sc.nextLine(), 0);
+                        break;
+                    case "2":
+                        System.out.print("Enter transaction type (Deposit/Withdraw/Transfer): ");
+                        search(sc.nextLine(), 2);
+                        break;
+                    case "3":
+                        System.out.print("Enter account No: ");
+                        search(sc.nextLine(), 3);
+                        break;
+                    case "4":
+                        System.out.print("Enter transtaction No: ");
+                        search(sc.nextLine(), 4);
+                        break;
+                    default:
+                        break;
                 }
                 break;
-
             default:
                 break;
         }
@@ -306,9 +321,38 @@ public class NewMain {
         
 
     // ------------------------backend methods------------------------------------
+    public static void viewAll() {
+        System.out.println("\tDate \t      Trans. No     Type \tAccount No\tAmount");
+                for (int i = 0; i < allReceipts.length; i++) {
+                    for (int j = 0; j < allReceipts[0].length; j++) {
+                        if (allReceipts[i][0]==null) {
+                            continue;
+                        }
+                        if (j!=4) {
+                            System.out.print(allReceipts[i][j]+"\t  ");    
+                        }
+                        else System.out.println("\t"+allReceipts[i][j]+"\t  ");
+                    }
+                    System.out.println("");
+                }
+    }
 
-    public static void search() {
-        
+    public static void search(String criteria, int ArrPos) {
+        String[][] filtetedReceipts = new String[allReceipts.length][5];
+        for (int i = 0; i < allReceipts.length; i++) {
+            if (allReceipts[i][ArrPos]==null) {
+                continue;
+            }
+            if (allReceipts[i][ArrPos].compareTo(criteria)==0) {
+                filtetedReceipts[i] = allReceipts[i];
+            }
+        }
+        for (String[] strings : filtetedReceipts) {
+            if (strings[0]==null) {
+                continue;
+            }
+            System.out.println(Arrays.toString(strings));
+        }
     }
     
     public static void receipts(String amount, String transactionType, String toAccount)
