@@ -314,6 +314,17 @@ public class NewMain {
                         break;
                 }
                 break;
+            case "3":
+                System.out.println("1. Sort by date \n2. Sort by amount");
+                switch (sc.nextLine()) {
+                    case "1":
+                        sorting();
+                        break;
+                
+                    default:
+                        break;
+                }
+                break;
             default:
                 break;
         }
@@ -354,10 +365,48 @@ public class NewMain {
             System.out.println(Arrays.toString(strings));
         }
     }
+
+    public static void sorting() {
+        for (int i = 0; i < allReceipts.length; i++) {
+            for (int j = 0; j < allReceipts.length - i - 1; j++) {
+                if (allReceipts[j + 1][0] == null) {
+                    continue;
+                }
+                System.out.println(allReceipts[j][1]);
+                if (Integer.parseInt(allReceipts[j][1]) > Integer.parseInt(allReceipts[j + 1][1])) { /*
+                                                                                                      * comparing
+                                                                                                      * Transaction
+                                                                                                      * number not date
+                                                                                                      * because it is
+                                                                                                      * easier. The
+                                                                                                      * result will be
+                                                                                                      * the same because
+                                                                                                      * the less number
+                                                                                                      * the earlier
+                                                                                                      * transaction was
+                                                                                                      * made
+                                                                                                      */
+                    System.out.println("if");
+                    String[] temp = allReceipts[j];
+                    allReceipts[j] = allReceipts[j + 1];
+                    allReceipts[j + 1] = temp;
+                }
+            }
+        }
+        for (int i = 0; i < allReceipts.length; i++) {
+            if (allReceipts[i][0]==null) {
+                continue;
+            }
+            for (String string : allReceipts[i]) {
+                System.out.print(string+"  ");
+            }
+            System.out.println("");
+        }
+    }
     
     public static void receipts(String amount, String transactionType, String toAccount)
             throws NumberFormatException, FileNotFoundException, IOException {
-        String now = new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()); // current date
+        String now = new SimpleDateFormat("dd/MM/yyyy HH.mm").format(new Date()); // current date
         String[] transactionNum = { String.valueOf(Integer.parseInt(readFile("transactionNumber.txt")[0]) + 1) }; /* array
         because
         read
