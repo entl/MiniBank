@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.InputMismatchException;
 import java.util.Random;
@@ -24,7 +25,7 @@ public class NewMain {
     static String[] thisAccount;
     static String[] allEmails;
     static String[] allAccountNumbers;
-    static String[][] allReceipts = new String[10][5];
+    static String[][] allReceipts = new String[50][5]; // declared for 50 pos. Hope it will be enough
     static Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) throws IOException {
@@ -58,70 +59,104 @@ public class NewMain {
         String[] registrationData = new String[7];
 
         while (menu) {
-            
+
             System.out.print("\nEnter first name: ");
-            registrationData[0] = sc.nextLine(); //adds first name
-            
+            registrationData[0] = sc.nextLine(); // adds first name
+
             System.out.print("\nEnter second name: ");
-            registrationData[1] = sc.nextLine(); //adds second name
+            registrationData[1] = sc.nextLine(); // adds second name
 
-            System.out.print("\nEnter your age: ");
-            registrationData[2] = sc.nextLine(); //adds age
-
-            if (Integer.parseInt(registrationData[2]) < 16) { //checks if person older 16
+            System.out.print("\nEnter your birthdate(ex. 19.02.2000): ");
+            registrationData[2] = sc.nextLine(); // adds age
+            if (Calendar.getInstance().get(Calendar.YEAR)
+                    - Integer.parseInt(registrationData[2].substring(registrationData[2].length() - 4)) < 16) { // checks
+                                                                                                                // if
+                                                                                                                // person
+                                                                                                                // older
+                                                                                                                // 16
                 System.out.println("Registration of the bank account is allowed only for people older 16");
                 break;
             }
-
+            System.out.println(registrationData[2]);
             while (true) {
                 System.out.print("\nEnter your email(only gmail is allowed): ");
                 registrationData[3] = sc.nextLine();
-                if (!registrationData[3].contains("@gmail.com")) { //check for gmail email
+                if (!registrationData[3].contains("@gmail.com")) { // check for gmail email
                     System.out.println("Use gmail email");
                     continue;
                 }
-                for (String string : allEmails) { //checks if emails already used
-                    if (string.compareTo(registrationData[3])==0) {
+                for (String string : allEmails) { // checks if emails already used
+                    if (string.compareTo(registrationData[3]) == 0) {
                         System.out.println("Email is already registrated");
-                        menu = false; /*change to false to break registration loop and go to main method */
+                        menu = false; /* change to false to break registration loop and go to main method */
                         break;
                     }
                 }
                 break;
             }
 
-            if (!menu) { //if false break loop
+            if (!menu) { // if false break loop
                 break;
             }
 
-            while(true){ //creating password
+            while (true) { // creating password
                 System.out.print("\nCreate password: ");
                 registrationData[4] = sc.nextLine();
 
                 System.out.print("\nRepeat password: ");
-                if (registrationData[4].compareTo(sc.nextLine())!=0) { /* if doesn't match skip loop iteration to enter password one more time */
+                if (registrationData[4].compareTo(sc.nextLine()) != 0) { /*
+                                                                          * if doesn't match skip loop iteration to
+                                                                          * enter password one more time
+                                                                          */
                     System.out.println("Password does not match");
                     continue;
                 }
                 break;
             }
-            registrationData[5] = ""; /* subsitute null with "" */
-            for (int i = 0; i < 5; i++) { // generating account number that consists of 5 numbers
-                int rand = random.nextInt(9);
-                registrationData[5] = registrationData[5] + rand;
+            boolean Number = true;
+            while (Number) { // loop is necessary to exclude chance of account number coincidences
+                registrationData[5] = ""; /* subsitute null with "" */
+                for (int i = 0; i < 5; i++) { // generating account number that consists of 5 numbers
+                    int rand = random.nextInt(9);
+                    registrationData[5] = registrationData[5] + rand;
+                }
+                for (String string : allAccountNumbers) {
+                    if (string.compareTo(registrationData[5]) == 0) {
+                        break;
+                    } else {
+                        Number = false;
+                        break;
+                    }
+                }
             }
 
-            registrationData[6] = "0"; //balance 
+            registrationData[6] = "0"; // balance
 
             System.out.println(Arrays.toString(registrationData));
 
-            String[] encryptedRegistrationData = encryption(registrationData); //encryptes registration data
+            String[] encryptedRegistrationData = encryption(registrationData); // encryptes registration data
 
-            writeFile(encryptedRegistrationData, encryptedRegistrationData[3]+".txt", ""); /* creates an encrypted file with registrated data file name is an encrypted email */
-            File receiptFile = new File(encryptedRegistrationData[3]+"_receipts.txt");
+            writeFile(encryptedRegistrationData, encryptedRegistrationData[3] + ".txt", ""); /*
+                                                                                              * creates an encrypted
+                                                                                              * file with registrated
+                                                                                              * data file name is an
+                                                                                              * encrypted email
+                                                                                              */
+            File receiptFile = new File(encryptedRegistrationData[3] + "_receipts.txt");
             receiptFile.createNewFile();
-            writeFile(encryption(allEmails), "emails.txt", encryptedRegistrationData[3]); /* adds new emails to the file with all emails */
-            writeFile(encryption(allAccountNumbers), "accountNumbers.txt", encryptedRegistrationData[5]); /*  adds new account number to the file with all account numbers*/
+            writeFile(encryption(allEmails), "emails.txt", encryptedRegistrationData[3]); /*
+                                                                                           * adds new emails to the file
+                                                                                           * with all emails
+                                                                                           */
+            writeFile(encryption(allAccountNumbers), "accountNumbers.txt", encryptedRegistrationData[5]); /*
+                                                                                                           * adds new
+                                                                                                           * account
+                                                                                                           * number to
+                                                                                                           * the file
+                                                                                                           * with all
+                                                                                                           * account
+                                                                                                           * numbers
+                                                                                                           */
             break;
         }
     }
@@ -129,14 +164,18 @@ public class NewMain {
     public static void login() throws IOException {
         try {
             System.out.print("\nEnter email: ");
-            thisAccount = decryption(readFile(Base64.getEncoder().encodeToString((sc.nextLine()).getBytes()) + ".txt")); /* encrypts inputted email, reads file, decrypts data stored and adds to the array */
+            thisAccount = decryption(readFile(Base64.getEncoder().encodeToString((sc.nextLine()).getBytes())
+                    + ".txt")); /*
+                                 * encrypts inputted email, reads file, decrypts data stored and adds to the
+                                 * array
+                                 */
 
             System.out.print("\nEnter password: ");
             if (sc.nextLine().compareTo(thisAccount[4]) == 0) {
                 try {
                     menu();
                 } catch (IOException e) {
-                    //For some reason throws doesn't work properly
+                    // For some reason throws doesn't work properly
                 }
             } else
                 System.out.println("Incorrect password");
@@ -149,19 +188,23 @@ public class NewMain {
         boolean menu = true;
         while (menu) {
             try {
-                thisAccount = decryption(readFile(encryption(thisAccount)[3] + ".txt")); /* updates inforomation in array */
+                thisAccount = decryption(readFile(encryption(thisAccount)[3] + ".txt")); /*
+                                                                                          * updates inforomation in
+                                                                                          * array
+                                                                                          */
             } catch (Exception e) {
                 System.out.println("menu err");
             }
             System.out.print("""
                     \n----------------------------------------
                     1. View balance
-                    2. Change email/password
-                    3. Deposit
-                    4. Withdraw
-                    5. Transfer
-                    6. History
-                    7. Logout
+                    2. View account details
+                    3. Change email/password
+                    4. Deposit
+                    5. Withdraw
+                    6. Transfer
+                    7. History
+                    8. Logout
                     """);
             System.out.print("What would you like to do?: ");
             switch (sc.nextLine()) {
@@ -169,21 +212,24 @@ public class NewMain {
                     viewBalance();
                     break;
                 case "2":
+                    viewAccountCredits();
                     break;
                 case "3":
-                    deposit();
                     break;
                 case "4":
-                    withdraw();
+                    deposit();
                     break;
                 case "5":
-                    transfer();
+                    withdraw();
                     break;
                 case "6":
-                    history();
+                    transfer();
                     break;
                 case "7":
-                    menu=false;
+                    history();
+                    break;
+                case "8":
+                    menu = false;
                     break;
                 default:
                     System.out.println("");
@@ -191,17 +237,26 @@ public class NewMain {
             }
         }
     }
-    
+
     // outputs balance of account
     public static void viewBalance() {
-        System.out.println("\n\n----------------------");
+        System.out.println("\n\n----------------------------------------");
         System.out.println("Account balance: " + thisAccount[6]);
         System.out.println("Press enter to continue... ");
         sc.nextLine();
     }
 
+    public static void viewAccountCredits() {
+        System.out.println("First name: " + thisAccount[0]);
+        System.out.println("Second name: " + thisAccount[1]);
+        System.out.println("Birthdate: " + thisAccount[2]);
+        System.out.println("Email: " + thisAccount[3]);
+        System.out.println("Password: " + "*******");
+        System.out.println("Account number: " + thisAccount[5]);
+    }
+
     public static void deposit() throws IOException {
-        System.out.println("\n\n----------------------");
+        System.out.println("\n\n----------------------------------------");
         System.out.print("Enter an amount to deposit: ");
         double amount = sc.nextDouble();
         thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) + amount);
@@ -213,86 +268,97 @@ public class NewMain {
     }
 
     public static void withdraw() throws IOException {
-        System.out.println("\n\n----------------------");
+        System.out.println("\n\n----------------------------------------");
         System.out.print("Enter an amount to withdraw: ");
         double amount = sc.nextDouble();
-        sc.nextLine(); //blank line
+        sc.nextLine(); // blank line
         if (Double.parseDouble(thisAccount[6]) - amount >= 0) {
             thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) - amount);
             writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", "");
             receipts(String.valueOf(amount), "Withdraw", thisAccount[5]);
-            System.out.println("Press enter to continue... ");
+            System.out.println("Press enter to continue... ");  
             sc.nextLine();
         } else
             System.out.println("Insufficient balance");
     }
 
     public static void transfer() throws IOException {
-        System.out.println("\n\n----------------------");
+        System.out.println("\n\n----------------------------------------");
         System.out.print("Enter an account number: ");
         String accountNumber = sc.nextLine();
-        int flag = 0; //position of account number
+        int flag = 0; // position of account number
         for (int i = 0; i < allAccountNumbers.length; i++) {
             try {
-                if (allAccountNumbers[i].compareTo(accountNumber)==0) {
+                if (allAccountNumbers[i].compareTo(accountNumber) == 0) {
                     flag = i;
                     System.out.print("Enter amount to transfer: ");
                     double amount = sc.nextDouble();
-                    sc.nextLine(); //blank line
+                    sc.nextLine(); // blank line
 
-                    String[] accountToTransfer = readFile((encryption(allEmails)[flag])+".txt"); /* reads data of account to transfer */
-                    accountToTransfer = decryption(accountToTransfer); //decrypts
+                    String[] accountToTransfer = readFile((encryption(allEmails)[flag]) + ".txt"); /*
+                                                                                                    * reads data of
+                                                                                                    * account to
+                                                                                                    * transfer
+                                                                                                    */
+                    accountToTransfer = decryption(accountToTransfer); // decrypts
 
-                    if (Double.parseDouble(thisAccount[6]) - amount >= 0) { //check if it is enough funds
-                        thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) - amount); // subtract from one acc
-                        accountToTransfer[6] = String.valueOf(Double.parseDouble(accountToTransfer[6]) + amount); //add to another
+                    if (Double.parseDouble(thisAccount[6]) - amount >= 0) { // check if it is enough funds
+                        thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) - amount); // subtract from
+                                                                                                      // one acc
+                        accountToTransfer[6] = String.valueOf(Double.parseDouble(accountToTransfer[6]) + amount); // add
+                                                                                                                  // to
+                                                                                                                  // another
                         receipts(String.valueOf(amount), "Transfer", accountToTransfer[5]);
-                        writeFile(encryption(thisAccount), encryption(thisAccount)[3]+".txt", ""); //save and encrypt
-                        writeFile(encryption(accountToTransfer), encryption(accountToTransfer)[3]+".txt", ""); //save and encrypt
+                        writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", ""); // save and encrypt
+                        writeFile(encryption(accountToTransfer), encryption(accountToTransfer)[3] + ".txt", ""); // save
+                                                                                                                 // and
+                                                                                                                 // encrypt
                         System.out.println("Operation successful");
                         System.out.println("Press enter to continue...");
                         sc.nextLine();
-                    } else System.out.println("Insufficient balance");
+                    } else
+                        System.out.println("Insufficient balance");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Incorrect input");
-                sc.nextInt(); //blank line
+                sc.nextInt(); // blank line
             }
         }
-        if (flag==0) {
+        if (flag == 0) {
             System.out.println("Account number not found");
         }
     }
 
     public static void history() throws FileNotFoundException {
-        String[] allReceiptsTemp = decryption(readFile(encryption(thisAccount)[3]+"_receipts.txt")); 
-        System.out.println(Arrays.toString(allReceiptsTemp));
+        String[] allReceiptsTemp = decryption(readFile(encryption(thisAccount)[3] + "_receipts.txt"));
         int j2 = 0;
         for (int i = 0; i < allReceipts.length; i++) {
             for (int j = 0; j < 5; j++) {
-                try {   
+                try {
                     allReceipts[i][j] = allReceiptsTemp[j2];
                     j2++;
                 } catch (Exception e) {
-                    //TODO: handle exception
+                    // TODO: handle exception
                 }
             }
         }
+        System.out.println("----------------------------------------");
         System.out.print("""
                 \n
                 1. View all history
                 2. Search for transaction
                 3. Sort transations
                 """);
-        System.out.print("Choose option:");
+        System.out.print("\nChoose option:");
         switch (sc.nextLine()) {
             case "1":
-                viewAll();
+                viewAll(true);
                 break;
             case "2":
+                System.out.println("----------------------------------------");
                 System.out.println(
-                        "1. Search by date \n2.Search by transaction type\n3.Search by account No. \n4.Search by transaction No.");
-                System.out.print("Choose searching criteria: ");
+                        "1. Search by date \n2. Search by transaction type\n3. Search by account No. \n4. Search by transaction No.");
+                System.out.print("\nChoose searching criteria: ");
                 switch (sc.nextLine()) {
                     case "1":
                         System.out.print("Enter date (ex. 30/01/2000): ");
@@ -315,12 +381,16 @@ public class NewMain {
                 }
                 break;
             case "3":
-                System.out.println("1. Sort by date \n2. Sort by amount");
+                System.out.println("----------------------------------------");
+                System.out.println("\n1. Sort by date \n2. Sort by amount");
+                System.out.print("\nChoose option: ");
                 switch (sc.nextLine()) {
                     case "1":
-                        sorting();
+                        sorting(1);
                         break;
-                
+                    case "2":
+                        sorting(4);
+                        break;
                     default:
                         break;
                 }
@@ -329,118 +399,153 @@ public class NewMain {
                 break;
         }
     }
-        
 
     // ------------------------backend methods------------------------------------
-    public static void viewAll() {
+    public static void viewAll(boolean direction) {
+        System.out.println("\n----------------------------------------");
         System.out.println("\tDate \t      Trans. No     Type \tAccount No\tAmount");
-                for (int i = 0; i < allReceipts.length; i++) {
-                    for (int j = 0; j < allReceipts[0].length; j++) {
-                        if (allReceipts[i][0]==null) {
-                            continue;
-                        }
-                        if (j!=4) {
-                            System.out.print(allReceipts[i][j]+"\t  ");    
-                        }
-                        else System.out.println("\t"+allReceipts[i][j]+"\t  ");
-                    }
-                    System.out.println("");
+        if (direction) {// if true display from first element to last
+            for (int i = 0; i < allReceipts.length; i++) {
+                if (allReceipts[i][0] == null) {
+                    continue;
                 }
+                for (int j = 0; j < allReceipts[0].length; j++) {
+                    if (j != 4) {
+                        System.out.print(allReceipts[i][j] + "\t  ");
+                    } else
+                        System.out.println("\t" + allReceipts[i][j] + "\t  ");
+                }
+                System.out.println("");
+            }
+        } else {// if false backwards. This block simplifies sorting data. You don't need to
+                // create 2 sorting methods which with different order
+            for (int i = allReceipts.length - 1; i > 0; i--) {
+                if (allReceipts[i][0] == null) {
+                    continue;
+                }
+                for (int j = 0; j < allReceipts[0].length; j++) {
+                    if (j != 4) {
+                        System.out.print(allReceipts[i][j] + "\t  ");
+                    } else
+                        System.out.println("\t" + allReceipts[i][j] + "\t  ");
+                }
+                System.out.println("");
+            }
+        }
     }
 
     public static void search(String criteria, int ArrPos) {
         String[][] filtetedReceipts = new String[allReceipts.length][5];
+        int j3 = 0;
         for (int i = 0; i < allReceipts.length; i++) {
-            if (allReceipts[i][ArrPos]==null) {
+            if (allReceipts[i][ArrPos] == null) {
                 continue;
             }
-            if (allReceipts[i][ArrPos].compareTo(criteria)==0) {
-                filtetedReceipts[i] = allReceipts[i];
+            if (allReceipts[i][ArrPos].contains(criteria)) {
+                filtetedReceipts[j3] = allReceipts[i];
+                j3++;
             }
         }
-        for (String[] strings : filtetedReceipts) {
-            if (strings[0]==null) {
-                continue;
+        if (filtetedReceipts[0][0] != null) {
+            System.out.println("\n----------------------------------------");
+            System.out.println("\tDate \t      Trans. No     Type \tAccount No\tAmount");
+            for (int i = 0; i < filtetedReceipts.length; i++) {
+                if (filtetedReceipts[i][0] == null) {
+                    continue;
+                }
+                for (int j = 0; j < filtetedReceipts[0].length; j++) {
+                    if (j != 4) {
+                        System.out.print(filtetedReceipts[i][j] + "\t  ");
+                    } else
+                        System.out.println("\t" + filtetedReceipts[i][j] + "\t  ");
+                }
+                System.out.println("");
             }
-            System.out.println(Arrays.toString(strings));
+        } else {
+            System.out.println("\nNo transactions found");
         }
     }
 
-    public static void sorting() {
+    public static void sorting(int criteria) {
         for (int i = 0; i < allReceipts.length; i++) {
             for (int j = 0; j < allReceipts.length - i - 1; j++) {
                 if (allReceipts[j + 1][0] == null) {
                     continue;
                 }
-                System.out.println(allReceipts[j][1]);
-                if (Integer.parseInt(allReceipts[j][1]) > Integer.parseInt(allReceipts[j + 1][1])) { /*
-                                                                                                      * comparing
-                                                                                                      * Transaction
-                                                                                                      * number not date
-                                                                                                      * because it is
-                                                                                                      * easier. The
-                                                                                                      * result will be
-                                                                                                      * the same because
-                                                                                                      * the less number
-                                                                                                      * the earlier
-                                                                                                      * transaction was
-                                                                                                      * made
-                                                                                                      */
-                    System.out.println("if");
+                if (Double.parseDouble(allReceipts[j][criteria]) > Double
+                        .parseDouble(allReceipts[j + 1][criteria])) { /*
+                                                                       * comparing
+                                                                       * Transaction
+                                                                       * number not date
+                                                                       * because it is
+                                                                       * easier. The
+                                                                       * result will be
+                                                                       * the same because
+                                                                       * the less number
+                                                                       * the earlier
+                                                                       * transaction was
+                                                                       * made
+                                                                       */
                     String[] temp = allReceipts[j];
                     allReceipts[j] = allReceipts[j + 1];
                     allReceipts[j + 1] = temp;
                 }
             }
         }
-        for (int i = 0; i < allReceipts.length; i++) {
-            if (allReceipts[i][0]==null) {
-                continue;
-            }
-            for (String string : allReceipts[i]) {
-                System.out.print(string+"  ");
-            }
-            System.out.println("");
+        if (criteria == 1) { // display from earliest to latest
+            viewAll(true);
+        } else {// display from biggest to smallest
+            viewAll(false);
         }
     }
-    
+
     public static void receipts(String amount, String transactionType, String toAccount)
             throws NumberFormatException, FileNotFoundException, IOException {
         String now = new SimpleDateFormat("dd/MM/yyyy HH.mm").format(new Date()); // current date
-        String[] transactionNum = { String.valueOf(Integer.parseInt(readFile("transactionNumber.txt")[0]) + 1) }; /* array
-        because
-        read
-        file
-        requires
-        arrays */
+        String[] transactionNum = { String.valueOf(Integer.parseInt(readFile("transactionNumber.txt")[0]) + 1) }; /*
+                                                                                                                   * array
+                                                                                                                   * because
+                                                                                                                   * read
+                                                                                                                   * file
+                                                                                                                   * requires
+                                                                                                                   * arrays
+                                                                                                                   */
         String[] allReceiptsTemp = decryption(
-            readFile(Base64.getEncoder().encodeToString(thisAccount[3].getBytes()) + "_receipts.txt")); /* read
-            data
-            from
-            file */
-            
-            String[] receipt = { now, transactionNum[0], transactionType, toAccount, amount}; /* if transfer we
-                                                                                                    need
-                                                                                                    accountNumber */
+                readFile(Base64.getEncoder().encodeToString(thisAccount[3].getBytes()) + "_receipts.txt")); /*
+                                                                                                             * read
+                                                                                                             * data
+                                                                                                             * from
+                                                                                                             * file
+                                                                                                             */
 
-            String[] updatedReceipts = new String[allReceiptsTemp.length + receipt.length]; /* new array to
-                                                                                                contanate old
-                                                                                                 receipts and new one */
+        String[] receipt = { now, transactionNum[0], transactionType, toAccount, amount }; /*
+                                                                                            * if transfer we
+                                                                                            * need
+                                                                                            * accountNumber
+                                                                                            */
 
-            System.arraycopy(allReceiptsTemp, 0, updatedReceipts, 0, allReceiptsTemp.length); // copy old receipts
-            System.arraycopy(receipt, 0, updatedReceipts, allReceiptsTemp.length, receipt.length); // copy new
+        String[] updatedReceipts = new String[allReceiptsTemp.length + receipt.length]; /*
+                                                                                         * new array to
+                                                                                         * contanate old
+                                                                                         * receipts and new one
+                                                                                         */
 
-            writeFile(encryption(updatedReceipts),
-                    Base64.getEncoder().encodeToString(thisAccount[3].getBytes()) + "_receipts.txt", ""); /* update
-                                                                                                           receipts in
-                                                                                                           the filem*/
-            writeFile(transactionNum, "transactionNumber.txt", ""); // saves transaction number (all transactions have
-                                                                    // different number)
+        System.arraycopy(allReceiptsTemp, 0, updatedReceipts, 0, allReceiptsTemp.length); // copy old receipts
+        System.arraycopy(receipt, 0, updatedReceipts, allReceiptsTemp.length, receipt.length); // copy new
+
+        writeFile(encryption(updatedReceipts),
+                Base64.getEncoder().encodeToString(thisAccount[3].getBytes()) + "_receipts.txt", ""); /*
+                                                                                                       * update
+                                                                                                       * receipts in
+                                                                                                       * the filem
+                                                                                                       */
+        writeFile(transactionNum, "transactionNumber.txt", ""); // saves transaction number (all transactions have
+                                                                // different number)
 
     }
 
     // method is created to encrypt data arrays using base64 encryption
-    public static String[] encryption(String[]  data) {
+    public static String[] encryption(String[] data) {
         String[] encrypted = new String[data.length];
         for (int i = 0; i < data.length; i++) { // get each element of data
             String encodedString = Base64.getEncoder().encodeToString(data[i].getBytes()); // encryption
@@ -453,15 +558,18 @@ public class NewMain {
     public static String[] decryption(String[] data) {
         String[] decrypted = new String[data.length];
         for (int i = 0; i < data.length; i++) {
-            byte[] decodedBytes = Base64.getDecoder().decode(data[i].getBytes()); /* get bytes of string and decode it into readable one */
+            byte[] decodedBytes = Base64.getDecoder().decode(data[i].getBytes()); /*
+                                                                                   * get bytes of string and decode it
+                                                                                   * into readable one
+                                                                                   */
             String decodedString = new String(decodedBytes); // bytes to string
             decrypted[i] = decodedString;
         }
         return decrypted;
     }
 
-    // method is used to read information from data file and create array with 
-    public static String[] readFile(String name) throws FileNotFoundException { 
+    // method is used to read information from data file and create array with
+    public static String[] readFile(String name) throws FileNotFoundException {
         File file = new File(name);
         Scanner scanFileLines = new Scanner(file);
         int i = 0;
@@ -482,10 +590,12 @@ public class NewMain {
         return data;
     }
 
-    /* method is used to save information to the file
-        extraData is used to add one more line to file
-        simplifies updating file, because instead of creation of an array
-        which length is bigger by 1 you can write new info to the file straightaway. */
+    /*
+     * method is used to save information to the file
+     * extraData is used to add one more line to file
+     * simplifies updating file, because instead of creation of an array
+     * which length is bigger by 1 you can write new info to the file straightaway.
+     */
     public static void writeFile(String[] data, String name, String extraData) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(name));
         for (int i = 0; i < data.length; i++) {
