@@ -68,16 +68,20 @@ public class NewMain {
 
             System.out.print("\nEnter your birthdate(ex. 19.02.2000): ");
             registrationData[2] = sc.nextLine(); // adds age
-            if (Calendar.getInstance().get(Calendar.YEAR)
-                    - Integer.parseInt(registrationData[2].substring(registrationData[2].length() - 4)) < 16) { // checks
-                                                                                                                // if
-                                                                                                                // person
-                                                                                                                // older
-                                                                                                                // 16
-                System.out.println("Registration of the bank account is allowed only for people older 16");
+            try {
+                if (Calendar.getInstance().get(Calendar.YEAR)
+                        - Integer.parseInt(registrationData[2].substring(registrationData[2].length() - 4)) < 16) { // checks
+                                                                                                                    // if
+                                                                                                                    // person
+                                                                                                                    // older
+                                                                                                                    // 16
+                    System.out.println("Registration of the bank account is allowed only for people older 16");
+                    break;
+                }
+            } catch (Exception e) {
+                System.out.println("Incorrect birthdate");
                 break;
             }
-            System.out.println(registrationData[2]);
             while (true) {
                 System.out.print("\nEnter your email(only gmail is allowed): ");
                 registrationData[3] = sc.nextLine();
@@ -247,39 +251,50 @@ public class NewMain {
     }
 
     public static void viewAccountCredits() {
+        System.out.println("\n----------------------------------------");
         System.out.println("First name: " + thisAccount[0]);
         System.out.println("Second name: " + thisAccount[1]);
         System.out.println("Birthdate: " + thisAccount[2]);
         System.out.println("Email: " + thisAccount[3]);
         System.out.println("Password: " + "*******");
         System.out.println("Account number: " + thisAccount[5]);
+        System.out.println("Press enter to continue... ");
+        sc.nextLine();
     }
 
     public static void deposit() throws IOException {
         System.out.println("\n\n----------------------------------------");
         System.out.print("Enter an amount to deposit: ");
-        double amount = sc.nextDouble();
-        thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) + amount);
-        sc.nextLine();// blank line
-        writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", "");
-        receipts(String.valueOf(amount), "Deposit ", thisAccount[5]);
-        System.out.println("Press enter to continue... ");
-        sc.nextLine();
+        try {
+            double amount = sc.nextDouble();
+            thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) + amount);
+            sc.nextLine();// blank line
+            writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", "");
+            receipts(String.valueOf(amount), "Deposit ", thisAccount[5]);
+            System.out.println("Press enter to continue... ");
+            sc.nextLine();
+        } catch (Exception e) {
+            System.out.println("Incorrect input");
+        }
     }
 
     public static void withdraw() throws IOException {
         System.out.println("\n\n----------------------------------------");
         System.out.print("Enter an amount to withdraw: ");
-        double amount = sc.nextDouble();
-        sc.nextLine(); // blank line
-        if (Double.parseDouble(thisAccount[6]) - amount >= 0) {
-            thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) - amount);
-            writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", "");
-            receipts(String.valueOf(amount), "Withdraw", thisAccount[5]);
-            System.out.println("Press enter to continue... ");  
-            sc.nextLine();
-        } else
-            System.out.println("Insufficient balance");
+        try {
+            double amount = sc.nextDouble();
+            sc.nextLine(); // blank line
+            if (Double.parseDouble(thisAccount[6]) - amount >= 0) {
+                thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) - amount);
+                writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", "");
+                receipts(String.valueOf(amount), "Withdraw", thisAccount[5]);
+                System.out.println("Press enter to continue... ");
+                sc.nextLine();
+            } else
+                System.out.println("Insufficient balance");
+        } catch (Exception e) {
+            System.out.println("Incorrect input");
+        }
     }
 
     public static void transfer() throws IOException {
@@ -287,45 +302,58 @@ public class NewMain {
         System.out.print("Enter an account number: ");
         String accountNumber = sc.nextLine();
         int flag = 0; // position of account number
-        for (int i = 0; i < allAccountNumbers.length; i++) {
-            try {
-                if (allAccountNumbers[i].compareTo(accountNumber) == 0) {
-                    flag = i;
-                    System.out.print("Enter amount to transfer: ");
-                    double amount = sc.nextDouble();
-                    sc.nextLine(); // blank line
+        if (accountNumber.compareTo(thisAccount[5]) != 0) {
+            for (int i = 0; i < allAccountNumbers.length; i++) {
+                try {
+                    if (allAccountNumbers[i].compareTo(accountNumber) == 0) {
+                        flag = i;
+                        System.out.print("Enter amount to transfer: ");
+                        try {
+                            double amount = sc.nextDouble();
+                            sc.nextLine(); // blank line
 
-                    String[] accountToTransfer = readFile((encryption(allEmails)[flag]) + ".txt"); /*
-                                                                                                    * reads data of
-                                                                                                    * account to
-                                                                                                    * transfer
-                                                                                                    */
-                    accountToTransfer = decryption(accountToTransfer); // decrypts
+                            String[] accountToTransfer = readFile((encryption(allEmails)[flag]) + ".txt"); /*
+                                                                                                            * reads data
+                                                                                                            * of
+                                                                                                            * account to
+                                                                                                            * transfer
+                                                                                                            */
+                            accountToTransfer = decryption(accountToTransfer); // decrypts
 
-                    if (Double.parseDouble(thisAccount[6]) - amount >= 0) { // check if it is enough funds
-                        thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) - amount); // subtract from
-                                                                                                      // one acc
-                        accountToTransfer[6] = String.valueOf(Double.parseDouble(accountToTransfer[6]) + amount); // add
-                                                                                                                  // to
-                                                                                                                  // another
-                        receipts(String.valueOf(amount), "Transfer", accountToTransfer[5]);
-                        writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", ""); // save and encrypt
-                        writeFile(encryption(accountToTransfer), encryption(accountToTransfer)[3] + ".txt", ""); // save
-                                                                                                                 // and
-                                                                                                                 // encrypt
-                        System.out.println("Operation successful");
-                        System.out.println("Press enter to continue...");
-                        sc.nextLine();
-                    } else
-                        System.out.println("Insufficient balance");
+                            if (Double.parseDouble(thisAccount[6]) - amount >= 0) { // check if it is enough funds
+                                thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) - amount); // subtract
+                                                                                                              // from
+                                                                                                              // one acc
+                                accountToTransfer[6] = String
+                                        .valueOf(Double.parseDouble(accountToTransfer[6]) + amount); // add
+                                                                                                     // to
+                                                                                                     // another
+                                receipts(String.valueOf(amount), "Transfer", accountToTransfer[5]);
+                                writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", ""); // save and
+                                                                                                             // encrypt
+                                writeFile(encryption(accountToTransfer), encryption(accountToTransfer)[3] + ".txt", ""); // save
+                                                                                                                         // and
+                                                                                                                         // encrypt
+                                System.out.println("Operation successful");
+                                System.out.println("Press enter to continue...");
+                                sc.nextLine();
+                            } else
+                                System.out.println("Insufficient balance");
+                        } catch (Exception e) {
+                            System.out.println("Incorrect input");
+                            sc.nextInt(); // blank line
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("Incorrect input");
+                    sc.nextInt(); // blank line
                 }
-            } catch (InputMismatchException e) {
-                System.out.println("Incorrect input");
-                sc.nextInt(); // blank line
             }
-        }
-        if (flag == 0) {
-            System.out.println("Account number not found");
+            if (flag == 0) {
+                System.out.println("Account number not found");
+            }
+        } else {
+            System.out.println("You cannot transfer money to own account");
         }
     }
 
@@ -349,7 +377,7 @@ public class NewMain {
                 2. Search for transaction
                 3. Sort transations
                 """);
-        System.out.print("\nChoose option:");
+        System.out.print("\nChoose option: ");
         switch (sc.nextLine()) {
             case "1":
                 viewAll(true);
@@ -374,7 +402,7 @@ public class NewMain {
                         break;
                     case "4":
                         System.out.print("Enter transtaction No: ");
-                        search(sc.nextLine(), 4);
+                        search(sc.nextLine(), 1);
                         break;
                     default:
                         break;
@@ -541,6 +569,8 @@ public class NewMain {
                                                                                                        */
         writeFile(transactionNum, "transactionNumber.txt", ""); // saves transaction number (all transactions have
                                                                 // different number)
+        System.out.println("   \n" + receipt[0] + " " + receipt[1] + " " + receipt[2] + " " + receipt[3] + " "
+                + receipt[4] + " \n");
 
     }
 
