@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -51,7 +50,7 @@ public class NewMain {
             }
         }
 
-    }
+    }//end main method
 
     public static void registration() throws IOException {
         boolean menu = true;
@@ -115,7 +114,7 @@ public class NewMain {
                     System.out.println("Password does not match");
                     continue;
                 }
-                break;
+                else break;
             }
             boolean Number = true;
             while (Number) { // loop is necessary to exclude chance of account number coincidences
@@ -124,13 +123,20 @@ public class NewMain {
                     int rand = random.nextInt(9);
                     registrationData[5] = registrationData[5] + rand;
                 }
-                for (String string : allAccountNumbers) {
-                    if (string.compareTo(registrationData[5]) == 0) {
-                        break;
-                    } else {
-                        Number = false;
-                        break;
+                if (allAccountNumbers.length!=0) {
+                    for (String string : allAccountNumbers) {
+                        if (string.compareTo(registrationData[5]) == 0) {
+                            System.out.println("if");
+                            break;
+                        } 
+                        else {
+                            Number = false;
+                            break;
+                        }
                     }
+                } else break;
+                if (!Number) {
+                    break;
                 }
             }
 
@@ -140,13 +146,13 @@ public class NewMain {
 
             String[] encryptedRegistrationData = encryption(registrationData); // encryptes registration data
 
-            writeFile(encryptedRegistrationData, encryptedRegistrationData[3] + ".txt", ""); /*
+            writeFile(encryptedRegistrationData, encryptedRegistrationData[5] + ".txt", ""); /*
                                                                                               * creates an encrypted
                                                                                               * file with registrated
                                                                                               * data file name is an
                                                                                               * encrypted email
                                                                                               */
-            File receiptFile = new File(encryptedRegistrationData[3] + "_receipts.txt");
+            File receiptFile = new File(encryptedRegistrationData[5] + "_receipts.txt");
             receiptFile.createNewFile();
             writeFile(encryption(allEmails), "emails.txt", encryptedRegistrationData[3]); /*
                                                                                            * adds new emails to the file
@@ -161,14 +167,25 @@ public class NewMain {
                                                                                                            * account
                                                                                                            * numbers
                                                                                                            */
+            System.out.println("Account successfully registered");
             break;
         }
-    }
+    }//end registration method
 
     public static void login() throws IOException {
         try {
             System.out.print("\nEnter email: ");
-            thisAccount = decryption(readFile(Base64.getEncoder().encodeToString((sc.nextLine()).getBytes())
+            String tempEmail = sc.nextLine();
+            int flag = 0;
+            for (int i = 0; i < allEmails.length; i++) {
+                if(allEmails[i]==null){
+                    continue;
+                }
+                if (allEmails[i].compareTo(tempEmail)==0) {
+                    flag = i;
+                }
+            }
+            thisAccount = decryption(readFile(Base64.getEncoder().encodeToString(allAccountNumbers[flag].getBytes())
                     + ".txt")); /*
                                  * encrypts inputted email, reads file, decrypts data stored and adds to the
                                  * array
@@ -186,13 +203,13 @@ public class NewMain {
         } catch (FileNotFoundException e) {
             System.out.println("Email not found");
         }
-    }
+    }//end login method
 
     public static void menu() throws IOException, FileNotFoundException {
         boolean menu = true;
         while (menu) {
             try {
-                thisAccount = decryption(readFile(encryption(thisAccount)[3] + ".txt")); /*
+                thisAccount = decryption(readFile(encryption(thisAccount)[5] + ".txt")); /*
                                                                                           * updates inforomation in
                                                                                           * array
                                                                                           */
@@ -219,6 +236,7 @@ public class NewMain {
                     viewAccountCredits();
                     break;
                 case "3":
+                    changeAccountCredits();
                     break;
                 case "4":
                     deposit();
@@ -240,7 +258,7 @@ public class NewMain {
                     break;
             }
         }
-    }
+    }//end menu method
 
     // outputs balance of account
     public static void viewBalance() {
@@ -248,7 +266,7 @@ public class NewMain {
         System.out.println("Account balance: " + thisAccount[6]);
         System.out.println("Press enter to continue... ");
         sc.nextLine();
-    }
+    }//end viewBalance method
 
     public static void viewAccountCredits() {
         System.out.println("\n----------------------------------------");
@@ -260,23 +278,103 @@ public class NewMain {
         System.out.println("Account number: " + thisAccount[5]);
         System.out.println("Press enter to continue... ");
         sc.nextLine();
-    }
+    }//end viewAccountCredits method
+
+    public static void changeAccountCredits() throws IOException {
+        System.out.println("\n----------------------------------------");
+        System.out.println("1. Change email\n2. Change password");
+        System.out.print("\nChoose option: ");
+        switch (sc.nextLine()) {
+            case "1":
+                Boolean isFound = false;
+                System.out.print("\nEnter password: ");
+                if (sc.nextLine().compareTo(thisAccount[4]) == 0) { // to change info password is necessary
+                    System.out.print("\nEnter new email: ");
+                    String newEmail = sc.nextLine();
+                    System.out.print("\nEnter email again: ");
+                    for (String string : allEmails) { // checks if email is free
+                        if (string == null) {
+                            continue;
+                        } else {
+                            if (newEmail.compareTo(string) == 0) {
+                                isFound = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (isFound) {
+                        System.out.println("Email already taken");
+                        break;
+                    }
+                    if (!newEmail.contains("@gmail.com")) { // emails have to be gmail
+                        System.out.println("Only @gmail.com mails allowed");
+                        break;
+                    }
+                    if (sc.nextLine().compareTo(newEmail) == 0) {
+                        int flag = 0;
+                        for(int i = 0; i < allEmails.length; i++){
+                            if (allEmails[i]==null) {
+                                continue;
+                            }
+                            if (allEmails[i].compareTo(thisAccount[3])==0) {
+                                flag=i;
+                                break;
+                            }
+                        }
+                        thisAccount[3] = newEmail;
+                        allEmails[flag] = newEmail;
+                        writeFile(encryption(thisAccount), encryption(thisAccount)[5] + ".txt", ""); // updates account
+                                                                                                     // information
+                        writeFile(encryption(allEmails), "emails.txt", "");
+                        System.out.println("Your account credits were successfully changed");
+                    } else {
+                        System.out.println("Emails do not match");
+                        break;
+                    }
+                } else {
+                    System.out.println("Passwords do not match");
+                    break;
+                }
+                break;
+            case "2":
+                System.out.print("\nEnter password: ");
+                if (sc.nextLine().compareTo(thisAccount[4]) == 0) { // to change info password is necessary
+                    System.out.print("\nEnter new password: ");
+                    String newPassword = sc.nextLine();
+                    System.out.print("\n Enter password again: ");
+                    if (sc.nextLine().compareTo(newPassword) == 0) { // check for pwd matching
+                        thisAccount[4] = newPassword; // updates info
+                        writeFile(encryption(thisAccount), encryption(thisAccount)[5] + ".txt", ""); // saves update
+                        System.out.println("Your account credits were successfully changed");
+                    } else {
+                        System.out.println("Passwords do not match");
+                        break;
+                    }
+                } else {
+                    System.out.println("Passwords do not match");
+                    break;
+                }
+                break;
+            default:
+                break;
+        }
+    }//change changeAccountCredits method
 
     public static void deposit() throws IOException {
         System.out.println("\n\n----------------------------------------");
         System.out.print("Enter an amount to deposit: ");
         try {
             double amount = sc.nextDouble();
-            thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) + amount);
+            thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) + amount); // add to balance
             sc.nextLine();// blank line
-            writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", "");
-            receipts(String.valueOf(amount), "Deposit ", thisAccount[5]);
+            writeFile(encryption(thisAccount), encryption(thisAccount)[5] + ".txt", "");// update information
+            receipts(String.valueOf(amount), "Deposit ", thisAccount[5]);// create receipt and output it
             System.out.println("Press enter to continue... ");
             sc.nextLine();
         } catch (Exception e) {
             System.out.println("Incorrect input");
         }
-    }
+    }//end deposit method
 
     public static void withdraw() throws IOException {
         System.out.println("\n\n----------------------------------------");
@@ -284,10 +382,10 @@ public class NewMain {
         try {
             double amount = sc.nextDouble();
             sc.nextLine(); // blank line
-            if (Double.parseDouble(thisAccount[6]) - amount >= 0) {
-                thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) - amount);
-                writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", "");
-                receipts(String.valueOf(amount), "Withdraw", thisAccount[5]);
+            if (Double.parseDouble(thisAccount[6]) - amount >= 0) { // check if balance sufficient
+                thisAccount[6] = String.valueOf(Double.parseDouble(thisAccount[6]) - amount); // subtract amount
+                writeFile(encryption(thisAccount), encryption(thisAccount)[5] + ".txt", ""); // update information
+                receipts(String.valueOf(amount), "Withdraw", thisAccount[5]); // create receipt and output it
                 System.out.println("Press enter to continue... ");
                 sc.nextLine();
             } else
@@ -295,7 +393,7 @@ public class NewMain {
         } catch (Exception e) {
             System.out.println("Incorrect input");
         }
-    }
+    } //end withdraw method
 
     public static void transfer() throws IOException {
         System.out.println("\n\n----------------------------------------");
@@ -312,7 +410,7 @@ public class NewMain {
                             double amount = sc.nextDouble();
                             sc.nextLine(); // blank line
 
-                            String[] accountToTransfer = readFile((encryption(allEmails)[flag]) + ".txt"); /*
+                            String[] accountToTransfer = readFile((encryption(allAccountNumbers)[flag]) + ".txt"); /*
                                                                                                             * reads data
                                                                                                             * of
                                                                                                             * account to
@@ -329,9 +427,9 @@ public class NewMain {
                                                                                                      // to
                                                                                                      // another
                                 receipts(String.valueOf(amount), "Transfer", accountToTransfer[5]);
-                                writeFile(encryption(thisAccount), encryption(thisAccount)[3] + ".txt", ""); // save and
+                                writeFile(encryption(thisAccount), encryption(thisAccount)[5] + ".txt", ""); // save and
                                                                                                              // encrypt
-                                writeFile(encryption(accountToTransfer), encryption(accountToTransfer)[3] + ".txt", ""); // save
+                                writeFile(encryption(accountToTransfer), encryption(accountToTransfer)[5] + ".txt", ""); // save
                                                                                                                          // and
                                                                                                                          // encrypt
                                 System.out.println("Operation successful");
@@ -355,10 +453,10 @@ public class NewMain {
         } else {
             System.out.println("You cannot transfer money to own account");
         }
-    }
+    }// end transfer method
 
     public static void history() throws FileNotFoundException {
-        String[] allReceiptsTemp = decryption(readFile(encryption(thisAccount)[3] + "_receipts.txt"));
+        String[] allReceiptsTemp = decryption(readFile(encryption(thisAccount)[5] + "_receipts.txt"));
         int j2 = 0;
         for (int i = 0; i < allReceipts.length; i++) {
             for (int j = 0; j < 5; j++) {
@@ -426,9 +524,8 @@ public class NewMain {
             default:
                 break;
         }
-    }
+    }// end history method
 
-    // ------------------------backend methods------------------------------------
     public static void viewAll(boolean direction) {
         System.out.println("\n----------------------------------------");
         System.out.println("\tDate \t      Trans. No     Type \tAccount No\tAmount");
@@ -441,29 +538,31 @@ public class NewMain {
                     if (j != 4) {
                         System.out.print(allReceipts[i][j] + "\t  ");
                     } else
-                        System.out.println("\t" + allReceipts[i][j] + "\t  ");
+                    System.out.println("\t" + allReceipts[i][j] + "\t  ");
                 }
                 System.out.println("");
             }
         } else {// if false backwards. This block simplifies sorting data. You don't need to
-                // create 2 sorting methods which with different order
-            for (int i = allReceipts.length - 1; i > 0; i--) {
-                if (allReceipts[i][0] == null) {
-                    continue;
-                }
-                for (int j = 0; j < allReceipts[0].length; j++) {
-                    if (j != 4) {
-                        System.out.print(allReceipts[i][j] + "\t  ");
-                    } else
-                        System.out.println("\t" + allReceipts[i][j] + "\t  ");
-                }
-                System.out.println("");
+        // create 2 sorting methods which with different order
+        for (int i = allReceipts.length - 1; i > 0; i--) {
+            if (allReceipts[i][0] == null) {
+                continue;
             }
+            for (int j = 0; j < allReceipts[0].length; j++) {
+                if (j != 4) {
+                    System.out.print(allReceipts[i][j] + "\t  ");
+                } else
+                System.out.println("\t" + allReceipts[i][j] + "\t  ");
+            }
+            System.out.println("");
         }
     }
+} //end viewAll method
 
-    public static void search(String criteria, int ArrPos) {
-        String[][] filtetedReceipts = new String[allReceipts.length][5];
+// ------------------------backend methods------------------------------------
+
+public static void search(String criteria, int ArrPos) {
+    String[][] filtetedReceipts = new String[allReceipts.length][5];
         int j3 = 0;
         for (int i = 0; i < allReceipts.length; i++) {
             if (allReceipts[i][ArrPos] == null) {
@@ -492,7 +591,7 @@ public class NewMain {
         } else {
             System.out.println("\nNo transactions found");
         }
-    }
+    }//end seacrch method
 
     public static void sorting(int criteria) {
         for (int i = 0; i < allReceipts.length; i++) {
@@ -525,7 +624,7 @@ public class NewMain {
         } else {// display from biggest to smallest
             viewAll(false);
         }
-    }
+    }//end sorting methid
 
     public static void receipts(String amount, String transactionType, String toAccount)
             throws NumberFormatException, FileNotFoundException, IOException {
@@ -539,7 +638,7 @@ public class NewMain {
                                                                                                                    * arrays
                                                                                                                    */
         String[] allReceiptsTemp = decryption(
-                readFile(Base64.getEncoder().encodeToString(thisAccount[3].getBytes()) + "_receipts.txt")); /*
+                readFile(Base64.getEncoder().encodeToString(thisAccount[5].getBytes()) + "_receipts.txt")); /*
                                                                                                              * read
                                                                                                              * data
                                                                                                              * from
@@ -562,7 +661,7 @@ public class NewMain {
         System.arraycopy(receipt, 0, updatedReceipts, allReceiptsTemp.length, receipt.length); // copy new
 
         writeFile(encryption(updatedReceipts),
-                Base64.getEncoder().encodeToString(thisAccount[3].getBytes()) + "_receipts.txt", ""); /*
+                Base64.getEncoder().encodeToString(thisAccount[5].getBytes()) + "_receipts.txt", ""); /*
                                                                                                        * update
                                                                                                        * receipts in
                                                                                                        * the filem
@@ -572,7 +671,7 @@ public class NewMain {
         System.out.println("   \n" + receipt[0] + " " + receipt[1] + " " + receipt[2] + " " + receipt[3] + " "
                 + receipt[4] + " \n");
 
-    }
+    }//end receipts method
 
     // method is created to encrypt data arrays using base64 encryption
     public static String[] encryption(String[] data) {
@@ -582,7 +681,7 @@ public class NewMain {
             encrypted[i] = encodedString; // reassign
         }
         return encrypted;
-    }
+    }//end encryption
 
     // method is used for decrypting arrays
     public static String[] decryption(String[] data) {
@@ -596,7 +695,7 @@ public class NewMain {
             decrypted[i] = decodedString;
         }
         return decrypted;
-    }
+    }//end decryption
 
     // method is used to read information from data file and create array with
     public static String[] readFile(String name) throws FileNotFoundException {
@@ -618,7 +717,7 @@ public class NewMain {
         scanFile.close();
         scanFileLines.close();
         return data;
-    }
+    }//end readFile
 
     /*
      * method is used to save information to the file
@@ -635,5 +734,5 @@ public class NewMain {
             writer.write(extraData + "\n");
         }
         writer.close();
-    }
-}
+    } //end writeFile
+} //end class
