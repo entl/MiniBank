@@ -199,8 +199,9 @@ public class NewMain {
                     // For some reason throws doesn't work properly
                 }
             } else
-                System.out.println("Incorrect password or email not found");
+                System.out.println("Incorrect password");
         } catch (FileNotFoundException e) {
+            System.out.println("Email not found");
         }
     }//end login method
 

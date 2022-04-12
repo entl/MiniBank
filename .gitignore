@@ -1,2 +1,6 @@
 *.txt
+!accountNumbers.txt
+!emails.txt
+!transactionNumber.txt
 test.java
+NewMain.java
