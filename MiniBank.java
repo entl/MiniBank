@@ -13,7 +13,6 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
@@ -138,13 +137,12 @@ public class MiniBank
             int rand = random.nextInt(9);
             registrationData[5] = registrationData[5] + rand;
           }
-          if(allAccountNumbers.length != 0)
+          if(allAccountNumbers.length != 0) //if no account number we do not need if block
           {
             for(String string: allAccountNumbers)
             {
-              if(string.compareTo(registrationData[5]) == 0)
+              if(string.compareTo(registrationData[5]) == 0) //check if account number is free
               {
-                System.out.println("if");
                 break;
               }
               else
@@ -163,7 +161,6 @@ public class MiniBank
 
         registrationData[6] = "0"; // balance
 
-        System.out.println(Arrays.toString(registrationData));
 
         String[] encryptedRegistrationData = encryption(registrationData); // encryptes registration data
 
@@ -233,7 +230,7 @@ public class MiniBank
           }
         }
         else
-          System.out.println("Incorrect password");
+          System.out.println("Incorrect password or email not found");
       }
       catch(FileNotFoundException e)
       {
@@ -339,7 +336,6 @@ public class MiniBank
               { // to change info password is necessary
                 System.out.print("\nEnter new email: ");
                 String newEmail = sc.nextLine();
-                System.out.print("\nEnter email again: ");
                 for(String string: allEmails)
                 { // checks if email is free
                   if(string == null)
@@ -365,6 +361,7 @@ public class MiniBank
                   System.out.println("Only @gmail.com mails allowed");
                   break;
                 }
+                System.out.print("\nEnter email again: ");
                 if(sc.nextLine().compareTo(newEmail) == 0)
                 {
                   int flag = 0;
@@ -727,21 +724,11 @@ public class MiniBank
                   {
                     continue;
                   }
-                  if(Double.parseDouble(allReceipts[j][criteria]) > Double
-                    .parseDouble(allReceipts[j + 1][criteria]))
+                  if(Double.parseDouble(allReceipts[j][criteria]) > Double.parseDouble(allReceipts[j + 1][criteria]))
                   {
                     /*
-                     * comparing
-                     * Transaction
-                     * number not date
-                     * because it is
-                     * easier. The
-                     * result will be
-                     * the same because
-                     * the less number
-                     * the earlier
-                     * transaction was
-                     * made
+                     * compare transaction number not date because it is easier. 
+                     * The result will be the same because the less number the earlier transaction was made
                      */
                     String[] temp = allReceipts[j];
                     allReceipts[j] = allReceipts[j + 1];
@@ -766,31 +753,11 @@ public class MiniBank
             String[] transactionNum = {
               String.valueOf(Integer.parseInt(readFile("transactionNumber.txt")[0]) + 1)
             };
-            /*
-             * array
-             * because
-             * read
-             * file
-             * requires
-             * arrays
-             */
-            String[] allReceiptsTemp = decryption(
-              readFile(Base64.getEncoder().encodeToString(thisAccount[5].getBytes()) + "_receipts.txt"));
-            /*
-             * read
-             * data
-             * from
-             * file
-             */
 
-            String[] receipt = {
-              now, transactionNum[0], transactionType, toAccount, amount
-            };
-            /*
-             * if transfer we
-             * need
-             * accountNumber
-             */
+            String[] allReceiptsTemp = decryption(
+              readFile(Base64.getEncoder().encodeToString(thisAccount[5].getBytes()) + "_receipts.txt")); //read data from file
+
+            String[] receipt = { now, transactionNum[0], transactionType, toAccount, amount };
 
             String[] updatedReceipts = new String[allReceiptsTemp.length + receipt.length];
             /*
@@ -802,15 +769,12 @@ public class MiniBank
             System.arraycopy(allReceiptsTemp, 0, updatedReceipts, 0, allReceiptsTemp.length); // copy old receipts
             System.arraycopy(receipt, 0, updatedReceipts, allReceiptsTemp.length, receipt.length); // copy new
 
-            writeFile(encryption(updatedReceipts),
-              Base64.getEncoder().encodeToString(thisAccount[5].getBytes()) + "_receipts.txt", "");
+            writeFile(encryption(updatedReceipts), Base64.getEncoder().encodeToString(thisAccount[5].getBytes()) + "_receipts.txt", "");
             /*
-             * update
-             * receipts in
-             * the filem
+             * update receipts in the file
              */
             writeFile(transactionNum, "transactionNumber.txt", ""); // saves transaction number (all transactions have
-            // different number)
+                                                                    // different number)
             System.out.println("   \n" + receipt[0] + " " + receipt[1] + " " + receipt[2] + " " + receipt[3] + " " + receipt[4] + " \n");
 
           } //end receipts method
