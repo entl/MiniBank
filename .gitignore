@@ -1,9 +1,9 @@
 *.txt
-*.png
 !accountNumbers.txt
 !emails.txt
 !transactionNumber.txt
 !README.txt
 !testingDocumentation.txt
+*.png
 test.java
 MiniBank.java
