@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
@@ -65,18 +66,37 @@ public class MiniBank
       {
 
         System.out.print("\nEnter first name: ");
-        registrationData[0] = sc.nextLine(); // adds first name
-
+        registrationData[0] = sc.nextLine().replace(" ", ""); // adds first name
+        
+        if (registrationData[0]=="") 
+        {
+          System.out.println("Name cannot be empty");
+          break;
+        }
         System.out.print("\nEnter second name: ");
-        registrationData[1] = sc.nextLine(); // adds second name
+        registrationData[1] = sc.nextLine().replace(" ", ""); // adds second name
+
+        if (registrationData[1]=="") 
+        {
+          System.out.println("Name cannot be empty");
+          break;
+        }
 
         System.out.print("\nEnter your birthdate(ex. 19.02.2000): ");
         registrationData[2] = sc.nextLine(); // adds age
         try
         {
+          String[] tempBirth = (registrationData[2]).split("\\.");
           if(Calendar.getInstance().get(Calendar.YEAR) - Integer.parseInt(registrationData[2].substring(registrationData[2].length() - 4)) < 16)
             { // checks if person older 16
             System.out.println("Registration of the bank account is allowed only for people older 16");
+            break;
+          }
+          if (registrationData[2].length() < 10 || !registrationData[2].contains(".")
+              || Integer.parseInt(tempBirth[0]) > 31 || Integer.parseInt(tempBirth[0]) < 1
+              || Integer.parseInt(tempBirth[1]) > 12 || Integer.parseInt(tempBirth[1]) < 1
+              || Integer.parseInt(tempBirth[2]) < 1900) {
+            System.out.println("Check if the entered birth date is correct");
             break;
           }
         }
@@ -92,6 +112,11 @@ public class MiniBank
           if(!registrationData[3].contains("@gmail.com"))
           { // check for gmail email
             System.out.println("Use gmail email");
+            continue;
+          }
+          if (registrationData[3].length()==10) 
+          {
+            System.out.println("Check if the entered email is correct");
             continue;
           }
           for(String string: allEmails)
@@ -114,8 +139,12 @@ public class MiniBank
         while(true)
         { // creating password
           System.out.print("\nCreate password: ");
-          registrationData[4] = sc.nextLine();
-
+          registrationData[4] = sc.nextLine().replace(" ", "");
+          if (registrationData[4]=="") 
+          {
+            System.out.println("Password cannot be empty");
+            continue;
+          }
           System.out.print("\nRepeat password: ");
           if(registrationData[4].compareTo(sc.nextLine()) != 0)
           {
@@ -199,7 +228,7 @@ public class MiniBank
       {
         System.out.print("\nEnter email: ");
         String tempEmail = sc.nextLine();
-        int flag = 0;
+        int flag = -1;
         for(int i = 0; i < allEmails.length; i++)
         {
           if(allEmails[i] == null)
@@ -232,7 +261,7 @@ public class MiniBank
         else
           System.out.println("Incorrect password or email not found");
       }
-      catch(FileNotFoundException e)
+      catch(FileNotFoundException | IndexOutOfBoundsException e)
       {
         System.out.println("Email not found");
       }
@@ -361,6 +390,11 @@ public class MiniBank
                   System.out.println("Only @gmail.com mails allowed");
                   break;
                 }
+                if (newEmail.length()==10) 
+                {
+                  System.out.println("Check if the entered email is correct");
+                  break;
+                }
                 System.out.print("\nEnter email again: ");
                 if(sc.nextLine().compareTo(newEmail) == 0)
                 {
@@ -382,7 +416,7 @@ public class MiniBank
                   writeFile(encryption(thisAccount), encryption(thisAccount)[5] + ".txt", ""); // updates account
                   // information
                   writeFile(encryption(allEmails), "emails.txt", "");
-                  System.out.println("Your account credits were successfully changed");
+                  System.out.println("\nYour account credits were successfully changed");
                 }
                 else
                 {
@@ -401,13 +435,18 @@ public class MiniBank
               if(sc.nextLine().compareTo(thisAccount[4]) == 0)
               { // to change info password is necessary
                 System.out.print("\nEnter new password: ");
-                String newPassword = sc.nextLine();
-                System.out.print("\n Enter password again: ");
+                String newPassword = sc.nextLine().replace(" ", "");
+                if (newPassword=="") 
+                {
+                  System.out.println("Password cannot be empty");
+                  break;
+                }
+                System.out.print("\nEnter password again: ");
                 if(sc.nextLine().compareTo(newPassword) == 0)
                 { // check for pwd matching
                   thisAccount[4] = newPassword; // updates info
                   writeFile(encryption(thisAccount), encryption(thisAccount)[5] + ".txt", ""); // saves update
-                  System.out.println("Your account credits were successfully changed");
+                  System.out.println("\nYour account credits were successfully changed");
                 }
                 else
                 {
@@ -442,6 +481,7 @@ public class MiniBank
           }
           catch(Exception e)
           {
+            sc.nextLine(); // blank line
             System.out.println("Incorrect input");
           }
         } //end deposit method
@@ -467,13 +507,14 @@ public class MiniBank
           }
           catch(Exception e)
           {
+            sc.nextLine(); // blank line
             System.out.println("Incorrect input");
           }
         } //end withdraw method
 
       public static void transfer() throws IOException
         {
-          System.out.println("\n\n----------------------------------------");
+          System.out.println("\n----------------------------------------");
           System.out.print("Enter an account number: ");
           String accountNumber = sc.nextLine();
           int flag = 0; // position of account number
@@ -521,14 +562,14 @@ public class MiniBank
                   catch(Exception e)
                   {
                     System.out.println("Incorrect input");
-                    sc.nextInt(); // blank line
+                    sc.nextLine(); // blank line
                   }
                 }
               }
               catch(Exception e)
               {
                 System.out.println("Incorrect input");
-                sc.nextInt(); // blank line
+                sc.nextLine(); // blank line
               }
             }
             if(flag == 0)
@@ -563,7 +604,7 @@ public class MiniBank
           }
           System.out.println("----------------------------------------");
           System.out.print("""
-              \n 1. View all history 
+              \n1. View all history 
               2. Search for transaction 
               3. Sort transations 
               """);

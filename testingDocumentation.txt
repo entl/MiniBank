@@ -1,0 +1,32 @@
+All bugs were fixed
+Starting menu (output is correct)
+1. Registration
+	- First name - bug (user can input blank line) fixed
+	- Second name - bug (user can input blank line) fixed
+	- Birthdate -  bug ( user can input not a full date) fixed
+	- Email - bug (user can input only @gmail.com) fixed
+	- Password - bug (user can input blank line) fixed
+2. Login
+	- Email - bug (user could input any email and gain access to the zero account in the array) fixed
+	- Password - no issues
+3. Program exit - no issues
+Main menu (output is correct)
+1. View balance - no issues
+2. View account details - no issues
+3. Change email / password - bugs are present
+	- Change email - bug (user can input only @gmail.com) fixed
+	- Change password - bug  (Enter password again has extra space and no new line after it) fixed
+4. Deposit - bug ( if input is not a number Scanner reads blank line) fixed
+5. Withdraw - bug ( if input is not a number Scanner reads blank line)fixed
+6. Transfer - bug (InputMismatchException is not caught) fixed
+7. History
+	- View all history - no issues
+	- Search for transaction  - no issues
+		- Search by date -  no issues
+		- Search by type - no issues
+		- Search by account number - no issues
+		- Search by transaction No. - no issues
+	- Sort transaction - no issues
+		- Sort by date - no issues
+		- Sort by amount - no issues
+8. Logout - no issue
